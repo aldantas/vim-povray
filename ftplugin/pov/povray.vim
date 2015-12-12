@@ -9,19 +9,18 @@ else
 endif
 
 let s:compilation_failed = 0
-let s:file_name = expand("%")
-let s:image_file = expand("%:r") . ".png"
 
 function! CleanPreviousImage()
-    let l:remove = system("rm " . s:image_file)
+    let l:remove = system("rm " . expand("%:r") . ".png")
     redraw!
 endfunction
 
 function! PovrayCompileSilent()
     call CleanPreviousImage()
+    execute 'w!'
     let g:compile_output = system(g:povray_command . " "
-                \ . s:file_name)
-    if empty(glob(s:image_file))
+                \ . expand("%"))
+    if empty(glob(expand("%:r") . ".png"))
         let s:compilation_failed = 1
         call ShowCompilationOutput()
     else
@@ -30,7 +29,7 @@ function! PovrayCompileSilent()
 endfunction
 
 function! ShowCompilationOutput()
-    execute 'silent pedit [POVRAY]' . s:image_file
+    execute 'silent pedit [POVRAY]' . expand("%:r") . ".png"
     wincmd P
     setlocal filetype=povray_output
     setlocal buftype=nofile
@@ -46,16 +45,17 @@ endfunction
 " Compile asynchronously if vim-do is installed
 function! PovrayCompileAsync()
     call CleanPreviousImage()
+    execute 'w!'
     execute g:execute_command . " "
                 \ . g:povray_command . " "
-                \ . s:file_name
+                \ . expand("%")
     redraw!
 endfunction
 
 function! ShowImage()
     if exists("g:image_viewer")
         execute "silent ! " . g:image_viewer . " "
-                    \ . s:image_file . "&"
+                    \ . expand("%:r") . ".png" . "&"
         redraw!
     else
         echom "Define an image viewer - let g:image_viewer = <viewer>"
@@ -71,4 +71,6 @@ endfunction
 
 nnoremap <F5> :call PovrayCompileAndShow()<cr>
 nnoremap <F8> :call PovrayCompileAsync()<cr>
+inoremap <F5> <Esc> :call PovrayCompileAndShow()<cr>
+inoremap <F8> <Esc> :call PovrayCompileAsync()<cr>
 nnoremap <F9> :call ShowImage()<cr>

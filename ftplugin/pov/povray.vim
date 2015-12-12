@@ -54,9 +54,8 @@ endfunction
 
 function! ShowImage()
     if exists("g:image_viewer")
-        execute g:execute_command . " "
-                    \ . g:image_viewer . " "
-                    \ . s:image_file
+        execute "silent ! " . g:image_viewer . " "
+                    \ . s:image_file . "&"
         redraw!
     else
         echom "Define an image viewer - let g:image_viewer = <viewer>"
